@@ -16,7 +16,7 @@
 
 ## Demo Video
 
-[![▶ Watch Demo](https://raw.githubusercontent.com/sodiq-code/neuroscale-agents/main/assets/demo-thumbnail.png)](https://youtu.be/t-zyw6tyBo8)
+[![▶ Watch Demo](https://raw.githubusercontent.com/sodiq-code/neuroscale-agents-v2/main/assets/demo-thumbnail.png)](https://youtu.be/t-zyw6tyBo8)
 
 *Full 3-minute walkthrough: problem → architecture → live pipeline → GitLab MR · zero credentials required*
 
@@ -66,8 +66,8 @@ Arize Phoenix
 ## Run It (zero credentials needed)
 
 ```bash
-git clone https://github.com/sodiq-code/neuroscale-agents
-cd neuroscale-agents
+git clone https://github.com/sodiq-code/neuroscale-agents-v2
+cd neuroscale-agents-v2
 pip install -r requirements.txt
 
 bash scripts/verify-all.sh   # → 7/7 PASS
