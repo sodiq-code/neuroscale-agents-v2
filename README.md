@@ -10,6 +10,9 @@
 [![A2A Pattern](https://img.shields.io/badge/pattern-A2A%20pipeline-purple)](agents/orchestrator.py)
 [![Tracks](https://img.shields.io/badge/tracks-GitLab%20%2B%20Arize-orange)](docs/ARCHITECTURE_2_0.md)
 [![Gemini](https://img.shields.io/badge/Gemini%202.0%20Flash-live-blue)](agents/diagnostician.py)
+[![ADK](https://img.shields.io/badge/Google%20ADK-agent%20runner-blue)](adk_agent/agent.py)
+[![Vertex AI Search](https://img.shields.io/badge/Vertex%20AI%20Search-RAG-orange)](agents/tools/rag_store.py)
+[![Cloud Run](https://img.shields.io/badge/Cloud%20Run-orchestrator-blue)](deploy/cloud-run.sh)
 [![Live Dashboard](https://img.shields.io/badge/dashboard-live-brightgreen)](https://neuroscale-agents-v2.streamlit.app)
 
 ---
@@ -55,9 +58,9 @@ Arize Phoenix
 | Agent | Role | Tech |
 |-------|------|------|
 | **Watcher** | Polls Arize Phoenix; scores anomaly severity | Arize MCP · `get-spans` · `get-trace` |
-| **Diagnostician** | RAG runbook retrieval; **Gemini 2.0 Flash LLM root-cause**; generates YAML patch | **Gemini 2.0 Flash** (`google-genai`) · TF-IDF RAG · Kyverno-compliant YAML |
+| **Diagnostician** | RAG runbook retrieval; **Gemini 2.0 Flash LLM root-cause**; generates YAML patch | **Gemini 2.0 Flash** (`google-genai`) · Vertex AI Search RAG · Kyverno-compliant YAML |
 | **Operator** | Executes the fix: branch → commit → MR → HITL notification | GitLab MCP · `create_branch` · `create_merge_request` |
-| **Orchestrator** | A2A coordinator; routes between agents; manages confidence gate | A2A pattern · Python orchestration |
+| **Orchestrator** | A2A coordinator; routes between agents; manages confidence gate | A2A pattern · **Google ADK** · Python orchestration |
 
 **Human-in-the-loop gate:** The Operator opens a Merge Request — it never merges unilaterally. Confidence ≥ 90% → auto-merge eligible with 15-min SLA. Below 90% → mandatory human review.
 
@@ -95,11 +98,30 @@ Real-time web UI showing the full A2A pipeline:
 Uses the same real agent code in demo mode — not a mockup.  
 The dashboard streams live events via `scripts/stream_runner.py` (SSE JSON lines → `/api/stream`).
 
-### Deploy to Cloud Run
+### Run with Google ADK
 
 ```bash
+pip install google-adk>=1.0.0
+adk run adk_agent          # interactive ADK runner
+adk web adk_agent          # ADK web UI at http://localhost:8000
+```
+
+The `adk_agent/` package wraps all three NeuroScale agents as ADK `FunctionTool`s. ADK manages session memory, tool routing, and agent-to-agent calls on top of Gemini 2.0 Flash.
+
+### Deploy Orchestrator to Cloud Run
+
+```bash
+# Set required env vars first
+export GEMINI_API_KEY=...
+export ARIZE_API_KEY=...
+export ARIZE_SPACE_ID=...
+export VERTEX_RAG_DATASTORE=projects/P/locations/L/collections/C/engines/E/servingConfigs/S
+export GCP_SA_EMAIL=neuroscale@<project>.iam.gserviceaccount.com
+
 bash deploy/cloud-run.sh <YOUR_GCP_PROJECT_ID>
 ```
+
+Deploys `neuroscale-orchestrator` as a managed Cloud Run service using `Dockerfile.orchestrator`. Streamlit dashboard stays on Streamlit Cloud.
 
 ---
 
@@ -188,6 +210,23 @@ result = {
 - Graceful fallback to TF-IDF rule-based analysis when API is unavailable (quota / no key)
 - Set `GOOGLE_API_KEY` in env to activate; omit for zero-credential demo mode
 
+### Google ADK — Agent Development Kit
+- **`adk_agent/agent.py`** — wraps `poll_arize_metrics`, `diagnose_incident`, `execute_remediation` as ADK `FunctionTool`s
+- `root_agent` is the ADK entry point — run with `adk run adk_agent` or `adk web adk_agent`
+- ADK manages Gemini session, tool routing, and multi-turn agent conversation
+- Falls back gracefully when `google-adk` is not installed (demo mode unaffected)
+
+### Vertex AI Search — Runbook RAG
+- **`agents/tools/rag_store.py`** — `RunbookRAGClient` auto-switches to Vertex AI Search when `GCP_PROJECT` + `VERTEX_RAG_DATASTORE` are set
+- Interface is identical to local TF-IDF — zero agent code changes to enable production RAG
+- In demo mode (`DEMO_MODE=true`): local TF-IDF keyword search over `runbooks/` markdown files
+- Datastore format: `projects/P/locations/L/collections/C/engines/E/servingConfigs/S`
+
+### Cloud Run — Orchestrator Service
+- **`Dockerfile.orchestrator`** — Python 3.12 slim, runs `agents/orchestrator.py`, exposes port 8080
+- **`deploy/cloud-run.sh`** — one-command deploy with env vars, service account, 1Gi memory, 300s timeout
+- Service name: `neuroscale-orchestrator` (Streamlit dashboard stays on Streamlit Cloud)
+
 ---
 
 ## Repository Structure
@@ -212,9 +251,14 @@ neuroscale-agents/
 │   ├── verify-all.sh          ← 7/7 verification suite
 │   ├── demo-run.sh            ← Full 10-beat CLI demo runner
 │   └── stream_runner.py       ← SSE-streaming A2A pipeline (used by dashboard)
+├── adk_agent/
+│   ├── __init__.py            ← ADK package marker
+│   └── agent.py               ← Google ADK FunctionTool wrappers + root_agent
 ├── deploy/
-│   └── cloud-run.sh           ← One-command Cloud Run deploy
-├── Dockerfile                 ← Container image
+│   ├── cloud-run.sh           ← Deploy orchestrator to Cloud Run
+│   └── cloud-run-dashboard.sh ← (optional) deploy dashboard to Cloud Run
+├── Dockerfile                 ← Streamlit dashboard container
+├── Dockerfile.orchestrator    ← Orchestrator service container (Cloud Run target)
 ├── requirements.txt
 └── LICENSE                    ← MIT
 ```
@@ -243,7 +287,7 @@ bash scripts/verify-all.sh
 
 ## Key Design Decisions
 
-**Why TF-IDF RAG?** Zero infrastructure to run locally. The `RunbookRAGClient` interface is unchanged in production — only the backend swaps to Vertex AI Search.
+**Why TF-IDF RAG locally + Vertex AI Search in production?** Zero infrastructure to run locally. The `RunbookRAGClient` interface is unchanged — only the backend swaps when `GCP_PROJECT` + `VERTEX_RAG_DATASTORE` are set. Judges can run the full pipeline with zero cloud credentials.
 
 **Why Gemini 2.0 Flash for root-cause?** Structured JSON reasoning over span data + runbook context in one call. Flash is fast enough (< 2s) to fit within the 60-second SLO target. The `_gemini_root_cause()` method returns a typed dict; the existing confidence gate and YAML generation pipeline are unchanged.
 

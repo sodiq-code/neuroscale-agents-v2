@@ -83,7 +83,9 @@ Arize Phoenix
 
 **GitLab MCP** (`agents/tools/gitlab_mcp.py`) mirrors the `@zereight/mcp-gitlab` MCP server tool schema over GitLab REST API v4. Tools implemented: `create_branch`, `get_file`, `commit_file`, `create_merge_request`, `list_merge_requests`. The Operator calls these in sequence to produce a complete, mergeable fix.
 
-**RAG runbook store** (`agents/tools/rag_store.py`) uses scikit-learn TF-IDF over five local runbook Markdown files covering: CPU throttling on KServe, model drift rollback, ArgoCD sync recovery, Kyverno policy debugging, and KServe NotReady states. The interface is a `RunbookRAGClient` abstraction — swappable to Vertex AI Search without touching agent code.
+**RAG runbook store** (`agents/tools/rag_store.py`) uses a `RunbookRAGClient` abstraction that automatically routes to **Vertex AI Search** (`google-cloud-discoveryengine`) in production when `GCP_PROJECT` and `VERTEX_RAG_DATASTORE` are configured, or falls back to local scikit-learn TF-IDF over five runbook Markdown files in demo mode. Zero agent code changes required to switch backends.
+
+**Google Agent Development Kit (ADK)** (`adk_agent/agent.py`) wraps `poll_arize_metrics`, `diagnose_incident`, and `execute_remediation` as ADK `FunctionTool`s under a single `root_agent`. Run the full pipeline with `adk run adk_agent` or explore with the ADK web UI. ADK manages session memory, tool routing, and multi-turn reasoning on top of Gemini 2.0 Flash.
 
 **Kyverno compliance** is enforced at YAML-generation time, before the Operator commits anything. The Diagnostician checks active ClusterPolicies (resource limits, non-root containers, label requirements, namespace quotas) and incorporates the constraints directly into the YAML patch. Every MR includes a Kyverno compliance checklist.
 
@@ -141,9 +143,10 @@ python3 agents/orchestrator.py
 ## FIELD: What's Next for NeuroScale Agents
 
 - **Live Arize Phoenix connection** — connect to a real Phoenix instance with actual model telemetry from a deployed KServe service
-- **Vertex AI Search RAG** — replace local TF-IDF with Vertex AI Search, using the same `RunbookRAGClient` interface — no agent code changes
+- **Vertex AI Search RAG** ✅ *implemented* — `RunbookRAGClient` auto-switches to Vertex AI Search when `GCP_PROJECT` + `VERTEX_RAG_DATASTORE` are set; same interface, zero agent code changes
+- **Google ADK agent runner** ✅ *implemented* — `adk_agent/agent.py` wraps all three agents as ADK `FunctionTool`s; run with `adk run adk_agent` or `adk web adk_agent`
+- **Cloud Run orchestrator** ✅ *implemented* — `Dockerfile.orchestrator` + `deploy/cloud-run.sh` deploy the orchestrator service to managed Cloud Run
 - **Slack / PagerDuty HITL delivery** — send the MR link directly to the on-call Slack channel with approve/reject buttons, replacing the current log-based HITL
-- **Cloud Run deployment** — each agent as an independent Cloud Run service, with the Orchestrator as the coordinator, enabling true parallel multi-incident handling
 - **Feedback loop** — capture human merge/reject decisions and surface them as runbook updates — agents that improve from every incident they handle
 - **Multi-model monitoring** — extend the WatcherAgent to monitor multiple KServe `InferenceService` resources in parallel, prioritising by severity
 
@@ -155,7 +158,11 @@ python3 agents/orchestrator.py
 python
 gemini-2.0-flash
 google-genai
+google-adk
 google-cloud
+vertex-ai-search
+google-cloud-discoveryengine
+cloud-run
 arize-phoenix
 gitlab
 streamlit

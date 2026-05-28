@@ -7,5 +7,11 @@ scikit-learn>=1.4.0
 # Gemini 2.0 Flash — root cause reasoning (Google GenAI SDK)
 google-genai>=0.8.0
 
+# Google Agent Development Kit (ADK) — agent runner + tool orchestration
+google-adk>=1.0.0
+
+# Vertex AI Search — runbook RAG in production
+google-cloud-discoveryengine>=0.11.0
+
 # Web Dashboard (hackathon platform requirement)
 streamlit>=1.30.0
