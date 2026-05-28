@@ -80,3 +80,5 @@ infrastructure/opencost/
 infrastructure/INCIDENT_*.md
 DEVPOST_COPY.md
 .env
+DEVPOST_SUBMISSION.md
+task.md
