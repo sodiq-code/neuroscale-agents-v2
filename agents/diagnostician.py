@@ -104,7 +104,7 @@ class DiagnosticianAgent:
 
     def _determine_root_cause(self, incident: dict, runbooks: list[RunbookResult]) -> dict:
         """
-        Root cause classification powered by Gemini 1.5 Flash.
+        Root cause classification powered by Gemini 2.0 Flash.
         Falls back to rule-based classification if Gemini is unavailable (DEMO_MODE).
         """
         if GEMINI_AVAILABLE and _gemini_client:
@@ -112,7 +112,7 @@ class DiagnosticianAgent:
         return self._rule_based_root_cause(incident, runbooks)
 
     def _gemini_root_cause(self, incident: dict, runbooks: list[RunbookResult]) -> dict:
-        """Call Gemini 1.5 Flash to reason over incident metrics and runbook context."""
+        """Call Gemini 2.0 Flash to reason over incident metrics and runbook context."""
         metrics = incident.get("metrics", {})
         runbook_context = "\n".join(
             f"- {rb.title}: {', '.join(rb.tags)}" for rb in runbooks
@@ -152,7 +152,7 @@ Respond ONLY with valid JSON in this exact format:
                 if raw.startswith("json"):
                     raw = raw[4:]
             result = json.loads(raw.strip())
-            print(f"  🤖 Gemini 1.5 Flash reasoning: {result.get('reasoning', '')[:120]}...")
+            print(f"  🤖 Gemini 2.0 Flash reasoning: {result.get('reasoning', '')[:120]}...")
             return {
                 "type": result.get("type", "RESOURCE_EXHAUSTION"),
                 "confidence": result.get("confidence", "MEDIUM"),

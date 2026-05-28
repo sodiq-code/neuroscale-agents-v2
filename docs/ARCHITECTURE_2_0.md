@@ -249,7 +249,7 @@ The MR description includes a full compliance checklist so the human reviewer ca
 | Policy compliance | Kyverno — Kyverno-compliant YAML generation + MR checklist |
 | RAG (demo) | scikit-learn TF-IDF keyword search over local runbook files |
 | RAG (production) | Vertex AI Search (same `RunbookRAGClient` interface) |
-| Web dashboard | Streamlit — live at [neuroscale-agents.streamlit.app](https://neuroscale-agents.streamlit.app) |
+| Web dashboard | Streamlit — live at [neuroscale-agents-v2.streamlit.app](https://neuroscale-agents-v2.streamlit.app) |
 | Container | Docker / Cloud Run (`deploy/cloud-run.sh`) |
 | Kubernetes runtime | GKE + KServe inference serving |
 | GitOps deployment | ArgoCD |

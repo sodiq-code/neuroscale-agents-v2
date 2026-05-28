@@ -565,11 +565,11 @@ with st.sidebar:
     st.markdown("#### Links")
     st.markdown("""
     <div style="font-family: 'Inter', sans-serif; font-size: 0.78rem; line-height: 2.2;">
-        <a href="https://neuroscale-agents.streamlit.app" target="_blank"
+        <a href="https://neuroscale-agents-v2.streamlit.app" target="_blank"
            style="color: #4ade80; text-decoration: none; display: block;">
             🌐 Live Dashboard
         </a>
-        <a href="https://github.com/sodiq-code/neuroscale-agents" target="_blank"
+        <a href="https://github.com/sodiq-code/neuroscale-agents-v2" target="_blank"
            style="color: #38bdf8; text-decoration: none; display: block;">
             💻 GitHub Repo
         </a>

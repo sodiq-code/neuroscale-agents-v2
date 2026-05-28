@@ -10,7 +10,7 @@
 [![A2A Pattern](https://img.shields.io/badge/pattern-A2A%20pipeline-purple)](agents/orchestrator.py)
 [![Tracks](https://img.shields.io/badge/tracks-GitLab%20%2B%20Arize-orange)](docs/ARCHITECTURE_2_0.md)
 [![Gemini](https://img.shields.io/badge/Gemini%202.0%20Flash-live-blue)](agents/diagnostician.py)
-[![Live Dashboard](https://img.shields.io/badge/dashboard-live-brightgreen)](https://neuroscale-agents.streamlit.app)
+[![Live Dashboard](https://img.shields.io/badge/dashboard-live-brightgreen)](https://neuroscale-agents-v2.streamlit.app)
 
 ---
 
@@ -20,7 +20,7 @@
 
 *Full 3-minute walkthrough: problem → architecture → live pipeline → GitLab MR · zero credentials required*
 
-> **Live Dashboard:** [neuroscale-agents.streamlit.app](https://neuroscale-agents.streamlit.app) · **Landing Page:** [sodiq-code.github.io/neuroscale-landing](https://sodiq-code.github.io/neuroscale-landing)
+> **Live Dashboard:** [neuroscale-agents-v2.streamlit.app](https://neuroscale-agents-v2.streamlit.app) · **Landing Page:** [sodiq-code.github.io/neuroscale-landing](https://sodiq-code.github.io/neuroscale-landing)
 
 ---
 
@@ -78,7 +78,7 @@ bash scripts/demo-run.sh     # → full A2A pipeline end-to-end
 
 ### Web Dashboard
 
-**Live:** [https://neuroscale-agents.streamlit.app](https://neuroscale-agents.streamlit.app)
+**Live:** [https://neuroscale-agents-v2.streamlit.app](https://neuroscale-agents-v2.streamlit.app)
 
 Or run locally:
 ```bash
