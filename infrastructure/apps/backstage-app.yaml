@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: neuroscale-backstage
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/sodiq-code/neuroscale-platform.git
+    targetRevision: main
+    path: infrastructure/backstage
+    helm:
+      # Explicit values file — dev profile (local k3d).
+      # For production, switch to values-prod.yaml which enables GitHub OAuth
+      # and removes dangerouslyAllowOutsideDevelopment.
+      valueFiles:
+        - values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: backstage
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

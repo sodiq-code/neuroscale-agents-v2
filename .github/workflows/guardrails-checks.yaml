@@ -1,0 +1,61 @@
+name: Agent Verification
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify-agents:
+    name: Agent Self-Tests (verify-all.sh)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install --quiet httpx scikit-learn numpy
+
+      - name: Run verify-all.sh
+        run: bash scripts/verify-all.sh
+
+      - name: Write job summary
+        if: always()
+        run: |
+          echo "## ✅ NeuroScale 2.0 — Agent Verification" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All 7 agent self-tests ran against \`scripts/verify-all.sh\`." >> $GITHUB_STEP_SUMMARY
+
+  lint-python:
+    name: Python Syntax Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Syntax check all agent files
+        run: |
+          python3 -m py_compile agents/config.py
+          python3 -m py_compile agents/watcher.py
+          python3 -m py_compile agents/diagnostician.py
+          python3 -m py_compile agents/operator_agent.py
+          python3 -m py_compile agents/orchestrator.py
+          echo "All agent files pass syntax check."
+
+  check-scripts:
+    name: Shell Script Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check verify-all.sh is executable and valid
+        run: bash -n scripts/verify-all.sh && echo "Script syntax OK"

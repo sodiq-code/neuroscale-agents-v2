@@ -1,0 +1,59 @@
+# Deployment for an NGINX pod
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-test
+  namespace: default
+  labels:
+    owner: platform-team
+    cost-center: cc-platform
+spec:
+  # Single replica for test environment
+  replicas: 1
+  # Select pods with app: nginx label
+  selector:
+    matchLabels:
+      app: nginx
+  # Pod template specification
+  template:
+    metadata:
+      labels:
+        app: nginx
+        owner: platform-team
+        cost-center: cc-platform
+    spec:
+      containers:
+      # NGINX container configuration — uses unprivileged image so it
+      # satisfies the disallow-root-containers Kyverno policy (port 8080).
+      - name: nginx
+        image: nginxinc/nginx-unprivileged:1.27
+        securityContext:
+          runAsNonRoot: true
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        ports:
+        # Listen on port 8080 (unprivileged nginx default)
+        - containerPort: 8080
+---
+# ClusterIP service exposing the NGINX pod on port 8080
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  namespace: default
+spec:
+  # Route to pods with app: nginx label
+  selector:
+    app: nginx
+  # Service port configuration
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  # Internal cluster communication only
+  type: ClusterIP
