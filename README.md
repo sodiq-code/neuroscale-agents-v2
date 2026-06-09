@@ -1,6 +1,6 @@
 # NeuroScale Agents — Autonomous AI SRE
 
-> **Google Cloud Rapid Agent Hackathon** · GitLab Track · Arize Phoenix Track
+> **Google Cloud Rapid Agent Hackathon** · GitLab Track · Powered by Arize Phoenix
 >
 > *Anomaly detected → root cause found → Merge Request opened. Under 60 seconds. Human reviews a ready-to-merge fix — not a raw incident.*
 
@@ -8,7 +8,7 @@
 [![Verification](https://img.shields.io/badge/verify--all.sh-7%2F7%20PASS-brightgreen)](scripts/verify-all.sh)
 [![Demo Mode](https://img.shields.io/badge/demo%20mode-zero%20credentials-blue)](agents/config.py)
 [![A2A Pattern](https://img.shields.io/badge/pattern-A2A%20pipeline-purple)](agents/orchestrator.py)
-[![Tracks](https://img.shields.io/badge/tracks-GitLab%20%2B%20Arize-orange)](docs/ARCHITECTURE_2_0.md)
+[![Track](https://img.shields.io/badge/track-GitLab-orange)](docs/ARCHITECTURE_2_0.md)
 [![Gemini](https://img.shields.io/badge/Gemini%202.0%20Flash-live-blue)](agents/diagnostician.py)
 [![ADK](https://img.shields.io/badge/Google%20ADK-agent%20runner-blue)](adk_agent/agent.py)
 [![Vertex AI Search](https://img.shields.io/badge/Vertex%20AI%20Search-RAG-orange)](agents/tools/rag_store.py)
@@ -199,7 +199,7 @@ result = {
 - Every fix is a GitLab MR with Kyverno compliance checklist embedded in the description
 - HITL gate: agent opens MR, never merges unilaterally
 
-### Arize Phoenix Track
+### Arize Phoenix (Observability Tool)
 - **`agents/tools/arize_mcp.py`** — MCP client: `get-spans`, `get-trace`
 - Watcher polls on configurable interval; reads `p99_latency_ms`, `error_rate_pct`, `total_spans`
 - In production: set `ARIZE_API_KEY` + `ARIZE_SPACE_ID` in env, `DEMO_MODE=false`
@@ -297,4 +297,5 @@ bash scripts/verify-all.sh
 
 ---
 
-*Built for the Google Cloud Rapid Agent Hackathon — GitLab + Arize Phoenix tracks · Powered by Gemini 2.0 Flash.*
+*Built for the Google Cloud Rapid Agent Hackathon — GitLab Track · Powered by Arize Phoenix + Gemini 2.0 Flash.*
+
