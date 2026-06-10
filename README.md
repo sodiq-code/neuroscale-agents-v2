@@ -1,6 +1,6 @@
 # NeuroScale Agents — Autonomous AI SRE
 
-> **Google Cloud Rapid Agent Hackathon** · GitLab Track · Powered by Arize Phoenix
+> **Autonomous ML Ops on Google Cloud** · GitLab MCP · Powered by Arize Phoenix
 >
 > *Anomaly detected → root cause found → Merge Request opened. Under 60 seconds. Human reviews a ready-to-merge fix — not a raw incident.*
 
@@ -192,7 +192,7 @@ result = {
 
 ---
 
-## Hackathon Track Integration
+## Platform & Track Integration
 
 ### GitLab Track
 - **`agents/tools/gitlab_mcp.py`** — MCP client: `create_branch`, `commit_file`, `create_merge_request`
@@ -287,7 +287,7 @@ bash scripts/verify-all.sh
 
 ## Key Design Decisions
 
-**Why TF-IDF RAG locally + Vertex AI Search in production?** Zero infrastructure to run locally. The `RunbookRAGClient` interface is unchanged — only the backend swaps when `GCP_PROJECT` + `VERTEX_RAG_DATASTORE` are set. Judges can run the full pipeline with zero cloud credentials.
+**Why TF-IDF RAG locally + Vertex AI Search in production?** Zero infrastructure to run locally. The `RunbookRAGClient` interface is unchanged — only the backend swaps when `GCP_PROJECT` + `VERTEX_RAG_DATASTORE` are set. The full pipeline runs locally with zero cloud credentials.
 
 **Why Gemini 2.0 Flash for root-cause?** Structured JSON reasoning over span data + runbook context in one call. Flash is fast enough (< 2s) to fit within the 60-second SLO target. The `_gemini_root_cause()` method returns a typed dict; the existing confidence gate and YAML generation pipeline are unchanged.
 
@@ -297,5 +297,5 @@ bash scripts/verify-all.sh
 
 ---
 
-*Built for the Google Cloud Rapid Agent Hackathon — GitLab Track · Powered by Arize Phoenix + Gemini 2.0 Flash.*
+*Powered by Arize Phoenix + Gemini 2.0 Flash · GitLab MCP · Vertex AI Search*
 

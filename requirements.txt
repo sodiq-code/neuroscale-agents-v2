@@ -13,5 +13,5 @@ google-adk>=1.0.0
 # Vertex AI Search — runbook RAG in production
 google-cloud-discoveryengine>=0.11.0
 
-# Web Dashboard (hackathon platform requirement)
+# Web Dashboard
 streamlit>=1.30.0

@@ -1,7 +1,7 @@
 """
 NeuroScale Agents — Web Dashboard
 Real-time visualization of the A2A autonomous remediation pipeline.
-Satisfies the hackathon "must run on web" platform requirement.
+Real-time web interface for the A2A autonomous remediation pipeline.
 
 Usage:
     streamlit run dashboard/app.py
@@ -584,9 +584,7 @@ with st.sidebar:
 
     st.markdown("""
     <div style="text-align: center; font-size: 0.7rem; color: #475569; padding-top: 4px; line-height: 1.8;">
-        Google Cloud Rapid Agent Hackathon<br>
-        <span style="color: #38bdf8;">GitLab</span> · <span style="color: #fb923c;">Arize Phoenix</span> tracks<br>
-        <span style="color: #4ade80;">MIT License</span>
+        <span style="color: #38bdf8;">GitLab MCP</span> · <span style="color: #fb923c;">Arize Phoenix</span> · <span style="color: #4ade80;">MIT License</span>
     </div>
     """, unsafe_allow_html=True)
 
