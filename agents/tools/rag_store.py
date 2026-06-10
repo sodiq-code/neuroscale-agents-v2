@@ -47,17 +47,47 @@ class RunbookRAGClient:
         self._index: list[dict] = []
         self._load_index()
 
+    # RAG safety thresholds
+    RAG_MIN_SIMILARITY: float = 0.65   # minimum top-1 score to act on
+    RAG_MIN_MARGIN:     float = 0.08   # minimum gap between top-1 and top-2
+
     # ── Public: semantic_search ────────────────────────────────────────────────
     def semantic_search(self, query: str, top_k: int = 3) -> list[RunbookResult]:
         """
         Search runbooks for the most relevant remediation guidance.
         Returns top_k results sorted by relevance.
+
+        RAG margin gate: if top-1 score < RAG_MIN_SIMILARITY OR the margin
+        between top-1 and top-2 is < RAG_MIN_MARGIN, returns empty list so
+        the agent falls back to base knowledge rather than acting on a weak match.
         """
         print(f"  [RAG] Semantic search: '{query}'")
         if self._use_vertex:
             results = self._vertex_search(query, top_k)
         else:
             results = self._local_search(query, top_k)
+
+        # ── RAG margin gate (skip for Vertex results — they have their own ranking) ──
+        if results and not self._use_vertex:
+            top_score  = results[0].relevance_score
+            second_score = results[1].relevance_score if len(results) > 1 else 0.0
+            margin = top_score - second_score
+
+            if top_score < self.RAG_MIN_SIMILARITY:
+                print(
+                    f"  [RAG] Low confidence gate: top score {top_score:.2f} < "
+                    f"{self.RAG_MIN_SIMILARITY} — returning empty to prevent hallucination"
+                )
+                return []
+
+            if margin < self.RAG_MIN_MARGIN:
+                print(
+                    f"  [RAG] Ambiguous match gate: margin {margin:.2f} < "
+                    f"{self.RAG_MIN_MARGIN} (top={top_score:.2f}, second={second_score:.2f}) "
+                    "— returning empty, agent should reason from base knowledge"
+                )
+                return []
+
         if results:
             print(f"  [RAG] Found {len(results)} relevant runbook(s):")
             for r in results:

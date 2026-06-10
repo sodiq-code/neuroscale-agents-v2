@@ -132,6 +132,28 @@ class OperatorAgent:
         logger.info(f"   MR !{mr_iid} → {mr_url}")
 
         # Step 4: HITL notification
+        # Per-action confidence thresholds — different actions warrant different confidence bars
+        _ACTION_THRESHOLDS: dict[str, float] = {
+            "rollback":             0.85,   # high bar — rewinding production state
+            "model_rollback":       0.85,
+            "resource_limit_increase": 0.75, # medium — bounded blast radius
+            "argocd_sync":          0.75,   # side-effect limited
+            "policy_fix":           0.80,
+            "scale_down":           0.85,   # risky — can drop replicas to 0
+            "create_exception":     0.80,
+        }
+        fix_type = remediation_plan.get("_raw", {}).get("root_cause", {}).get("fix_type", "")
+        required_threshold = _ACTION_THRESHOLDS.get(fix_type, 0.85)  # default conservative
+        below_threshold = confidence < required_threshold
+
+        if below_threshold:
+            import logging
+            logging.getLogger("neuroscale.operator").warning(
+                f"Confidence {confidence:.1%} below required threshold "
+                f"{required_threshold:.1%} for action type '{fix_type}'. "
+                "HITL notification sent but MR will not auto-merge."
+            )
+
         hitl_payload = self.hitl.notify(
             incident_id=incident_id,
             mr_url=mr_url,
@@ -190,7 +212,24 @@ class OperatorAgent:
         confidence = plan.get("confidence", 0.0)
 
         steps_md = "\n".join(f"- [x] {s}" for s in steps) if steps else "- [x] Automated remediation applied"
-        auto_merge_text = "Yes (confidence > 90%)" if confidence > 0.9 else "No — manual approval required"
+        # Use per-action thresholds — not a single 90% bar for all actions
+        _ACTION_THRESHOLDS: dict[str, float] = {
+            "rollback":             0.85,
+            "model_rollback":       0.85,
+            "resource_limit_increase": 0.75,
+            "argocd_sync":          0.75,
+            "policy_fix":           0.80,
+            "scale_down":           0.85,
+            "create_exception":     0.80,
+        }
+        fix_type = plan.get("_raw", {}).get("root_cause", {}).get("fix_type", "")
+        required_threshold = _ACTION_THRESHOLDS.get(fix_type, 0.85)
+        auto_merge_eligible = confidence >= required_threshold
+        auto_merge_text = (
+            f"Yes (confidence {confidence:.0%} ≥ threshold {required_threshold:.0%} for '{fix_type}')"
+            if auto_merge_eligible
+            else f"No — confidence {confidence:.0%} < required {required_threshold:.0%} for '{fix_type}'"
+        )
 
         description = f"""## 🤖 Automated Remediation — {incident_id}
 
